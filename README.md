@@ -3,7 +3,7 @@ Submitted by: **Ibrahim Elnikety**
 
 This web app: **A community fantasy RPG where each post sets a scene, players comment with character actions and dice checks, and the scene's author chooses an action as canon for the next chapter.**
 
-Time spent: **In progress**
+Time spent: **2 hrs**
 
 ## Required Features
 The following **required** functionality is completed:
@@ -48,7 +48,8 @@ The following **optional** features are implemented:
   - e.g., selecting the color scheme or showing the content and image of each post on the home feed
 - [x] Users can add more characteristics to their posts
   - Scene flags include Adventure, Encounter, Mystery, Campfire, Question, and Opinion; the feed can filter by flag
-  - Characters have ability scores and optional external portrait URLs; scenes can also include an optional external image URL
+  - Character scores use six 4d6-drop-lowest rolls, assigned by the player's ranked ability priorities and adjusted to a 72-point total; the lowest stat is capped at 17 when points are added
+  - Characters and scenes can include optional external image URLs
   - Players roll a d20 plus the selected character's ability modifier for each action; an optional difficulty check displays success or failure
 - [x] Web app displays a loading animation whenever data is being fetched
 
@@ -59,16 +60,14 @@ The following **additional** features are implemented:
 
 ## Video Walkthrough
 Here's a walkthrough of implemented user stories:
-<img src='docs/walkthrough.gif' title='Video Walkthrough' width='800' alt='Video walkthrough of Wayfarer’s Table' />
-<!-- Replace docs/walkthrough.gif with the GIF you record. -->
-Record the walkthrough with **ScreenToGif** and save the GIF as `docs/walkthrough.gif`.
+<img src='Recording 2026-11-16 094415.gif' title='Video Walkthrough' width='800' alt='Video walkthrough of Wayfarer’s Table' />
 
 ## Notes
 ### Run the app locally
 1. Install Node.js 20 or later.
 2. In the project folder, run `npm install`.
 3. Copy `.env.example` to `.env.local`.
-4. Fill in `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from your Supabase project's **Settings → API** page. The anon/publishable client key is intended for browser use; **never** put a service-role key or database password in a `VITE_` variable.
+4. Fill in `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` from your Supabase project's **Settings → API** page. The publishable client key is intended for browser use; **never** put a service-role key or database password in a `VITE_` variable.
 5. Run `npm run dev` and open the local URL printed by Vite. Run `npm run build` to create a production build.
 
 ### Supabase setup

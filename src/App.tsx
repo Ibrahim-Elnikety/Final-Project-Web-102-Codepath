@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  ArrowDown,
   ArrowDownWideNarrow,
   ArrowLeft,
   ArrowUp,
@@ -20,13 +21,17 @@ import {
   X,
 } from "lucide-react";
 import { isSupabaseConfigured, supabase } from "./lib/supabase";
+import {
+  ABILITIES,
+  assignAndAdjustScores,
+  roll4d6DropLowest,
+  type Ability,
+  type CharacterStats,
+} from "./lib/character-stats";
 
 const SCENE_TYPES = ["Adventure", "Encounter", "Mystery", "Campfire", "Question", "Opinion"] as const;
-const ABILITIES = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
 
 type SceneType = (typeof SCENE_TYPES)[number];
-type Ability = (typeof ABILITIES)[number];
-type CharacterStats = Record<Ability, number>;
 
 type Scene = {
   id: string;
@@ -141,19 +146,45 @@ function CharacterForm({
   const [name, setName] = useState("");
   const [concept, setConcept] = useState("");
   const [imageUrl, setImageUrl] = useState("");
-  const [stats, setStats] = useState<CharacterStats>({
-    strength: 10,
-    dexterity: 10,
-    constitution: 10,
-    intelligence: 10,
-    wisdom: 10,
-    charisma: 10,
-  });
+  const [priority, setPriority] = useState<Ability[]>([...ABILITIES]);
+  const [stats, setStats] = useState<CharacterStats | null>(null);
+  const [assignedRolls, setAssignedRolls] = useState<ReturnType<typeof assignAndAdjustScores>["assigned"] | null>(null);
+  const [initialTotal, setInitialTotal] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
+  const adjustmentSummary = initialTotal === null || initialTotal === 72
+    ? "No adjustment needed."
+    : initialTotal > 72
+      ? `${initialTotal - 72} point${initialTotal - 72 === 1 ? "" : "s"} removed from the highest score${initialTotal - 72 === 1 ? "" : "s"}.`
+      : `${72 - initialTotal} point${72 - initialTotal === 1 ? "" : "s"} added to the lowest score${72 - initialTotal === 1 ? "" : "s"}.`;
+
+  function movePriority(index: number, offset: -1 | 1) {
+    const nextIndex = index + offset;
+    if (nextIndex < 0 || nextIndex >= priority.length) return;
+    setPriority((current) => {
+      const next = [...current];
+      [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
+      return next;
+    });
+  }
+
+  function rollStats() {
+    const result = assignAndAdjustScores(
+      priority,
+      Array.from({ length: ABILITIES.length }, () => roll4d6DropLowest()),
+    );
+    setStats(result.stats);
+    setInitialTotal(result.initialTotal);
+    setAssignedRolls(result.assigned);
+    setFormError("");
+  }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!stats) {
+      setFormError("Set your ability priority and roll your stats first.");
+      return;
+    }
     setSaving(true);
     setFormError("");
     try {
@@ -195,25 +226,90 @@ function CharacterForm({
         Portrait image URL <span className="optional">(optional)</span>
         <input type="url" value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="https://…" />
       </label>
-      <div className="stat-grid">
-        {ABILITIES.map((ability) => (
-          <label className="stat-field" key={ability}>
-            {abilityLabel(ability).slice(0, 3).toUpperCase()}
-            <input
-              type="number"
-              min="1"
-              max="30"
-              value={stats[ability]}
-              onChange={(event) => setStats({ ...stats, [ability]: Number(event.target.value) })}
-              aria-label={abilityLabel(ability)}
-            />
-          </label>
-        ))}
-      </div>
+      <section className="stat-roll-section" aria-labelledby="stat-roll-title">
+        <div className="stat-roll-heading">
+          <div>
+            <span className="eyebrow">The 72-point pool</span>
+            <h4 id="stat-roll-title">Rank your ability priorities</h4>
+            <p>Highest priority receives the highest roll. You cannot edit the scores after they are rolled.</p>
+          </div>
+          <Dice5 className="heading-mark" size={22} />
+        </div>
+        {!assignedRolls ? (
+          <>
+            <ol className="priority-list" aria-label="Ability priority order">
+              {priority.map((ability, index) => (
+                <li className="priority-row" key={ability}>
+                  <span className="priority-rank">{index + 1}</span>
+                  <strong>{abilityLabel(ability)}</strong>
+                  <span className="priority-caption">
+                    {index === 0 ? "Most important" : index === priority.length - 1 ? "Least important" : ""}
+                  </span>
+                  <div className="priority-controls">
+                    <button
+                      className="icon-button"
+                      type="button"
+                      disabled={index === 0}
+                      onClick={() => movePriority(index, -1)}
+                      aria-label={`Move ${abilityLabel(ability)} up`}
+                    >
+                      <ArrowUp size={15} />
+                    </button>
+                    <button
+                      className="icon-button"
+                      type="button"
+                      disabled={index === priority.length - 1}
+                      onClick={() => movePriority(index, 1)}
+                      aria-label={`Move ${abilityLabel(ability)} down`}
+                    >
+                      <ArrowDown size={15} />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <p className="roll-rules">
+              Roll 4d6 and drop the lowest die six times. Rolls are assigned from highest to lowest by your ranking.
+              Excess points come off the highest score; missing points go to the lowest score, up to 17.
+            </p>
+            <button className="button button--outline roll-stats-button" type="button" onClick={rollStats}>
+              <Dice5 size={16} /> Roll all six stats
+            </button>
+          </>
+        ) : (
+          <div className="rolled-stats">
+            <div className="roll-total-banner">
+              <span>Raw total: <strong>{initialTotal}</strong></span>
+              <span>Final total: <strong>72</strong></span>
+              <small>{adjustmentSummary}</small>
+            </div>
+            <div className="rolled-score-list">
+              {assignedRolls.map((roll, index) => (
+                <div className="rolled-score-row" key={roll.ability}>
+                  <span className="priority-rank">{index + 1}</span>
+                  <strong>{abilityLabel(roll.ability)}</strong>
+                  <span className="dice-faces" aria-label={`Rolled ${roll.dice.join(", ")}; dropped ${roll.dropped}`}>
+                    {roll.dice.map((die, dieIndex) => (
+                      <span className={dieIndex === 0 ? "die-face is-dropped" : "die-face"} key={`${roll.ability}-${dieIndex}`}>
+                        {die}
+                      </span>
+                    ))}
+                  </span>
+                  <span className="score-transition">
+                    {roll.score !== roll.finalScore && <small>{roll.score} → </small>}
+                    <b>{roll.finalScore}</b>
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="roll-rules">The crossed-out die was dropped. These final scores total exactly 72.</p>
+          </div>
+        )}
+      </section>
       {formError && <p className="form-error">{formError}</p>}
       <div className="form-actions">
         {onCancel && <button className="button button--quiet" type="button" onClick={onCancel}>Cancel</button>}
-        <button className="button button--primary" disabled={saving}>
+        <button className="button button--primary" disabled={saving || !stats}>
           {saving ? <LoaderCircle className="spin" size={16} /> : <Plus size={16} />}
           Save character
         </button>

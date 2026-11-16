@@ -126,14 +126,33 @@ form input::placeholder, form textarea::placeholder { color: #67766a; }
 .check-chip input { width: 13px; min-height: 13px; padding: 0; accent-color: var(--gold); }
 .check-chip.is-selected { color: #ead9b6; border-color: #8a7047; background: rgba(215, 173, 104, .1); }
 .scene-form { max-width: 720px; margin: 0 auto; }
-.stat-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
-form label.stat-field { gap: 5px; margin-bottom: 12px; color: #99a798; font: 9px "DM Mono", monospace; text-align: center; }
-.stat-field input { min-height: 36px; padding: 6px; text-align: center; }
+.stat-roll-section { margin: 20px 0; padding: 16px; border: 1px solid #35443a; border-radius: 9px; background: rgba(15, 23, 18, .55); }
+.stat-roll-heading { display: flex; align-items: start; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
+.stat-roll-heading h4 { margin: 5px 0 4px; color: #e4e6dc; font: 500 17px "Playfair Display", serif; }
+.stat-roll-heading p, .roll-rules { margin: 0; color: #91a092; font-size: 10px; line-height: 1.6; }
+.priority-list { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; }
+.priority-row, .rolled-score-row { min-height: 40px; display: flex; align-items: center; gap: 10px; padding: 4px 8px; border: 1px solid #2c3b31; border-radius: 7px; background: #18231c; }
+.priority-rank { width: 22px; height: 22px; flex: 0 0 22px; display: grid; place-items: center; color: #dfc58e; border: 1px solid #65573e; border-radius: 50%; font: 10px "DM Mono", monospace; }
+.priority-row > strong, .rolled-score-row > strong { min-width: 96px; color: #dce2d7; font-size: 11px; }
+.priority-caption { flex: 1; color: #839285; font-size: 9px; }
+.priority-controls { display: flex; gap: 2px; }
+.priority-controls .icon-button { width: 27px; height: 27px; }
+.roll-rules { margin: 11px 0; }
+.roll-stats-button { width: 100%; }
+.rolled-stats { display: grid; gap: 10px; }
+.roll-total-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 10px 12px; color: #aab6a8; border: 1px solid #45513d; border-radius: 7px; background: rgba(215,173,104,.06); font-size: 10px; }
+.roll-total-banner strong { color: #e4c686; font: 500 13px "DM Mono", monospace; }
+.roll-total-banner small { width: 100%; color: #96a394; font-size: 9px; }
+.rolled-score-list { display: grid; gap: 5px; }
+.rolled-score-row { min-height: 42px; }
+.dice-faces { display: flex; flex: 1; gap: 4px; }
+.die-face { width: 22px; height: 22px; display: grid; place-items: center; color: #c6d0c3; border: 1px solid #465547; border-radius: 5px; background: #202c24; font: 10px "DM Mono", monospace; }
+.die-face.is-dropped { color: #b2786e; border-color: #744f46; text-decoration: line-through; opacity: .7; }
+.score-transition { min-width: 50px; color: #e2c47f; text-align: right; font: 12px "DM Mono", monospace; }
+.score-transition small { color: #9da99c; font-size: 9px; }
 .form-card--compact { margin: 4px 0 15px; padding: 16px; background: #17221b; }
 .form-card--compact .form-heading { margin-bottom: 12px; }
 .form-card--compact .form-heading h3 { font-size: 17px; }
-.form-card--compact .stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.form-card--compact .form-actions { display: none; }
 .form-card--compact .helper-text { display: none; }
 
 .detail-page { max-width: 860px; margin: 0 auto; }
@@ -273,7 +292,9 @@ form label.stat-field { gap: 5px; margin-bottom: 12px; color: #99a798; font: 9px
   .scene-chevron { width: 15px; }
   .form-card, .action-form { padding: 17px; }
   .form-row { grid-template-columns: 1fr; gap: 0; }
-  .stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .priority-row > strong, .rolled-score-row > strong { min-width: 83px; }
+  .priority-caption { font-size: 8px; }
+  .roll-total-banner { gap: 8px; }
   .action-byline time { width: 100%; margin-left: 0; }
   .character-card { min-height: 190px; }
   .character-portrait { width: 92px; flex-basis: 92px; }
